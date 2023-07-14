@@ -37,8 +37,8 @@ if (choice == 1)
     if abs((x2-x2_prev)/x2) < relApproxError
         Root = x2;
         flag =1;
-         disp('flag1: relative approximate error criteria reached');
-          disp(['Root: ',num2str(Root)]);
+        disp('flag1: relative approximate error criteria reached');
+        disp(['Root: ',num2str(Root)]);
         break;
     end
 
@@ -63,15 +63,12 @@ if (choice == 1)
     errorVal(w) = a;
     iterationVal(w) = iteration;
 
-   
-   
-
     end
 
-    disp('flag3: Maximum number of iterations reached.');
-     flag = 3;
-     Root = x2;
-     disp(["Root: ",num2str(Root)]);
+    % disp('flag3: Maximum number of iterations reached.');
+    % flag = 3;
+    % Root = x2;
+    
     figure
     plot(xValues, yValues);
     xlabel('x');
@@ -111,7 +108,7 @@ epsilon2 = input('Enter the convergence criterion for the function value: ');
 maxIterations = input('Enter the maximum number of iterations: ');
 
 % Initialize variables
-iter = 0;
+iteration = 0;
 x_old = x0;
 error = 1;
 
@@ -119,34 +116,56 @@ errorVal = [];
 itrationVal = [];
 
 
+
 % Newton-Raphson iteration
-while error > epsilon1 && abs(func(x_old)) > epsilon2 && iter < maxIterations
+while error > epsilon1 && abs(func(x_old)) > epsilon2 && iteration < maxIterations
     x_new = x_old - func(x_old) / df(x_old);
     error = abs((x_new - x_old) / x_new);
     x_old = x_new;
-    iter = iter + 1;
+    iteration = iteration + 1;
 
-     w=iter;
+     w=iteration;
     errorVal(w) = error;
-    iterationVal(w) = iter;
+    iterationVal(w) = iteration;
+
+    if error < epsilon1
+            flag = 1; % Relative approximate error convergence criterion met
+            break;
+    elseif abs(func(x_new)) < epsilon1
+            flag = 2; % Function value convergence criterion met
+            break;
+    end
 end
+
+
+ fprintf('Root: %.6f\n', x_new);
+    fprintf('Stopping Criteria Flag: %d\n', flag);
 
 % Check convergence
-if iter == maxIterations
-    disp('Maximum number of iterations reached without convergence.');
-else
-    root = x_new;
-    fprintf('Root: %.6f\n', root);
-end
+% if iteration == maxIterations
+%     disp('Maximum number of iterations reached without convergence.');
+% else
+%     root = x_new;
+%     fprintf('Root: %.6f\n', root);
+% end
+
 % Plot f(x) vs. x
 x_vals = linspace(x0 - 1, x0 + 1, 100);
 f_vals = func(x_vals);
+
+ x_highlight = x_new;
+ f_highlight = 0;
 
 figure;
 plot(x_vals, f_vals);
 xlabel('x');
 ylabel('f(x)');
 title('f(x) vs. x');
+
+hold on;
+    plot(x_highlight, f_highlight, 'ro', 'MarkerSize', 10);
+    text(x_highlight, f_highlight,['(' num2str(x_highlight) ', ' num2str(f_highlight) ')'], 'VerticalAlignment', 'bottom');
+    hold off;   
 
 % Plot the approximate relative error vs. iteration number
 
@@ -175,11 +194,13 @@ if choice == 2
     % Step 3: Perform fixed-point iteration
     x = x0;
     flag = 0;
-    iter = 0;
+    iteration = 0;
     f_values = [];
-    approx_errors = [];
+    x_vals=[];
+    errorVal = [];
+    iterationVal= [];
 
-    while iter < max_iterations
+    while iteration < max_iterations
         x_prev = x;
 
         % Calculate the new value of x using the fixed-point iteration formula
@@ -192,8 +213,7 @@ if choice == 2
         approx_error = abs((x - x_prev) / x);
 
         % Add current values to the lists for plotting
-        f_values = [f_values; f];
-        approx_errors = [approx_errors; approx_error];
+        
 
         % Check stopping criteria
         if approx_error < tol_rel
@@ -204,26 +224,42 @@ if choice == 2
             break;
         end
 
-        iter = iter + 1;
+        iteration = iteration + 1;
+        errorVal(iteration) = approx_error;
+        iterationVal(iteration) = iteration;
+
+        f_values(iteration) = g(x);
+        x_vals(iteration) = x;
+        
     end
 
     % Step 4: Display results
     fprintf('Root: %.6f\n', x);
     fprintf('Stopping Criteria Flag: %d\n', flag);
 
+    x_highlight = x;
+ f_highlight = g(x);
+
     % Plot f(x) vs. x
     figure;
-    plot(x0:x, f_values);
+    plot(x_vals,f_values);
     xlabel('x');
     ylabel('f(x)');
     title('Plot of f(x) vs. x');
+    grid on;
+
+    hold on;
+    plot(x_highlight, f_highlight, 'ro', 'MarkerSize', 10);
+    text(x_highlight, f_highlight,['(' num2str(x_highlight) ', ' num2str(f_highlight) ')'], 'VerticalAlignment', 'bottom');
+    hold off; 
 
     % Plot the approximate relative error vs. iteration number
     figure;
-    plot(1:iter, approx_errors);
-    xlabel('Iteration');
-    ylabel('Approximate Relative Error');
-    title('Plot of Approximate Relative Error vs. Iteration Number');
+    plot(iterationVal, errorVal);
+     xlabel("iteration number");
+     ylabel("approximate relative");
+     title("Plot of approximate relative Vs iteration Number");
+     grid on;
 end
 
 
